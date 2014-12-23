@@ -8,6 +8,7 @@ HEIGHT = 480
 class Game:
     def __init__(self):
         self.aliens = self.make_aliens()
+        self.aliens.reverse()
         self.player = Player(self)
         self.alien_bullets = []
         self.player_bullets = []
@@ -50,12 +51,14 @@ class Game:
     def detect_collisions(self):
         for bullet in self.player_bullets:
             for alien in self.aliens:
-                if abs(bullet.x - alien.x) < 10 and abs(bullet.y - alien.y) < 10:
+                if bullet.active and abs(bullet.x - alien.x) < 15 and abs(bullet.y - alien.y) < 15:
                     alien.alive = False
+                    bullet.active = False
         self.aliens = filter(lambda alien : alien.alive, self.aliens)
+        self.alien_bullets = filter(lambda bullet : bullet.active, self.alien_bullets)
 
         for bullet in self.alien_bullets:
-            if bullet.x == self.player.x and bullet.y == self.player.y:
+            if abs(bullet.x - self.player.x) < 15 and abs(bullet.y - self.player.y) < 15:
                 self.player.lives -= 1
                 if self.player.lives < 0:
                     self.game_over = True
@@ -98,12 +101,13 @@ class Player:
         self.img = pygame.image.load("player.png")
         self.rect = self.img.get_rect()
         self.speed = 0
+        self.lives = 3
 
     def accel(self, direction):
         if direction == 1:
-            self.speed = 4
+            self.speed = 3
         elif direction == -1:
-            self.speed = -4
+            self.speed = -3
         else:
             self.speed = 0
 
@@ -116,7 +120,7 @@ class Player:
 
     def shoot(self):
         if len(self.game.player_bullets) < 5:
-            self.game.player_bullets.append(Bullet(self.x, self.y, -1))
+            self.game.player_bullets.append(Bullet(self.x + 13, self.y + 15, -1))
 
     def set_image(img):
         self.img = img
@@ -128,6 +132,7 @@ class Bullet:
         self.direction = direction
         self.img = pygame.image.load("bullet.png")
         self.rect = self.img.get_rect()
+        self.active = True
 
     def set_image(img):
         self.img = img
@@ -172,7 +177,8 @@ def main():
             for alien in game.aliens:
                 main_surface.blit(alien.img, (alien.x, alien.y))
             for bullet in game.player_bullets:
-                main_surface.blit(bullet.img, (bullet.x, bullet.y))
+                if bullet.active:
+                    main_surface.blit(bullet.img, (bullet.x, bullet.y))
             for bullet in game.alien_bullets:
                 main_surface.blit(bullet.img, (bullet.x, bullet.y))
 
