@@ -49,8 +49,8 @@ class Game:
             bullet.move()
         for bullet in self.player_bullets:
             bullet.move()
-        self.alien_bullets = filter(lambda b : b.y < 480, self.alien_bullets)
-        self.player_bullets = filter(lambda b : b.y >= 0, self.player_bullets)
+        self.alien_bullets = filter(lambda b : b.y < 480 and b.active, self.alien_bullets)
+        self.player_bullets = filter(lambda b : b.y >= 0 and b.active, self.player_bullets)
         self.set_alien_direction()
 
     def detect_collisions(self):
@@ -63,8 +63,9 @@ class Game:
         self.alien_bullets = filter(lambda bullet : bullet.active, self.alien_bullets)
 
         for bullet in self.alien_bullets:
-            if abs((bullet.x + BULLET_SIZE/2) - (self.player.x + SHIP_SIZE/2)) < SHIP_SIZE/2 and abs((bullet.y + BULLET_SIZE/2) - (self.player.y + SHIP_SIZE/2)) < SHIP_SIZE/2:
+            if bullet.active and abs((bullet.x + BULLET_SIZE/2) - (self.player.x + SHIP_SIZE/2)) < SHIP_SIZE/2 and abs((bullet.y + BULLET_SIZE/2) - (self.player.y + SHIP_SIZE/2)) < SHIP_SIZE/2:
                 self.player.dead = True
+                bullet.active = False
                 self.player.lives -= 1
                 if self.player.lives < 0:
                     self.game_over = True
@@ -155,13 +156,19 @@ class Bullet:
 
 def main():
     pygame.init()
+    myfont = pygame.font.SysFont("monospace", 15)
     main_surface = pygame.display.set_mode((640, 480))
     pygame.display.set_caption("Shitty Space Invaders")
     game = Game()
     timer = pygame.time.Clock()
+    game_over = myfont.render("Game Over! (press space to restart)", 1, (255, 255, 0))
+
     while True:
         timer.tick(60)
         if game.game_over:
+            main_surface.fill((0, 0, 0, 0))
+            main_surface.blit(game_over, (100, 100))
+            pygame.display.flip()
             ev = pygame.event.poll()
             if ev.type == pygame.QUIT:
                 break
@@ -209,13 +216,12 @@ def main():
                 main_surface.blit(game.player.exploded, (game.player.x, game.player.y))
             else:
                 main_surface.blit(game.player.img, (game.player.x, game.player.y))
-            
+            lives = myfont.render("Lives: " + str(game.player.lives), 1, (255, 255, 0))
+            main_surface.blit(lives, (20, 400))
             pygame.display.flip()
-
+            
             game.player.move()
-            #if timer % 100 == 0:
             game.update_all()
-            #timer += 1
 
     pygame.quit()
 
