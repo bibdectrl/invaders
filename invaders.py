@@ -4,6 +4,8 @@ from random import randint
 
 WIDTH = 640
 HEIGHT = 480
+SHIP_SIZE = 32
+BULLET_SIZE = 4
 
 class Game:
     def __init__(self):
@@ -51,14 +53,15 @@ class Game:
     def detect_collisions(self):
         for bullet in self.player_bullets:
             for alien in self.aliens:
-                if bullet.active and abs(bullet.x - alien.x) < 15 and abs(bullet.y - alien.y) < 15:
+                if bullet.active and abs((bullet.x + BULLET_SIZE/2) - (alien.x + SHIP_SIZE/2)) < SHIP_SIZE/2 and abs((bullet.y+BULLET_SIZE/2) - (alien.y+SHIP_SIZE/2)) < SHIP_SIZE/2:
                     alien.alive = False
                     bullet.active = False
         self.aliens = filter(lambda alien : alien.alive, self.aliens)
+        self.aliens = sorted(self.aliens, key = lambda a : -a.y)
         self.alien_bullets = filter(lambda bullet : bullet.active, self.alien_bullets)
 
         for bullet in self.alien_bullets:
-            if abs(bullet.x - self.player.x) < 15 and abs(bullet.y - self.player.y) < 15:
+            if abs((bullet.x + BULLET_SIZE/2) - (self.player.x + SHIP_SIZE/2)) < SHIP_SIZE/2 and abs((bullet.y + BULLET_SIZE/2) - (self.player.y + SHIP_SIZE/2)) < SHIP_SIZE/2:
                 self.player.lives -= 1
                 if self.player.lives < 0:
                     self.game_over = True
@@ -84,11 +87,11 @@ class Alien:
 
     def move(self):
         if self.direction == 1:
-            self.x += 1
+            self.x += 3
         elif self.direction == -1:
-            self.x -= 1
+            self.x -= 3
         elif self.direction == 10:
-            self.y += 1
+            self.y += 3
 
     def set_image(img):
         self.img = img
