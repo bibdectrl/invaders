@@ -79,7 +79,7 @@ class Alien:
         self.rect = self.img.get_rect()
 
     def shoot_maybe(self):
-        if randint(0, 1000) == 1:
+        if randint(0, 1200) == 1:
             self.game.alien_bullets.append(Bullet(self.x, self.y, 1))
 
     def __str__(self):
@@ -87,11 +87,11 @@ class Alien:
 
     def move(self):
         if self.direction == 1:
-            self.x += 3
+            self.x += 2
         elif self.direction == -1:
-            self.x -= 3
+            self.x -= 2
         elif self.direction == 10:
-            self.y += 3
+            self.y += 2
 
     def set_image(img):
         self.img = img
@@ -142,20 +142,28 @@ class Bullet:
 
     def move(self):
         if self.direction == 1:
-            self.y += 20
+            self.y += 10
         else:
-            self.y -= 20
+            self.y -= 10
 
 def main():
     pygame.init()
     main_surface = pygame.display.set_mode((640, 480))
     game = Game()
-    timer = 0
+    timer = pygame.time.Clock()
     while True:
+        timer.tick(60)
         if game.game_over:
             ev = pygame.event.poll()
             if ev.type == pygame.QUIT:
                 break
+            if ev.type == KEYDOWN:
+                if ev.key == K_SPACE:
+                    game = Game()
+                    game.game_over = False
+                elif ev.key == K_ESCAPE:
+                    break
+  
         else:
             ev = pygame.event.poll()
             if ev.type == pygame.QUIT:
@@ -189,9 +197,9 @@ def main():
             pygame.display.flip()
 
             game.player.move()
-            if timer % 100 == 0:
-                game.update_all()
-            timer += 1
+            #if timer % 100 == 0:
+            game.update_all()
+            #timer += 1
 
     pygame.quit()
 
