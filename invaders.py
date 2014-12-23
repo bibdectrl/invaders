@@ -38,6 +38,9 @@ class Game:
                 alien.direction = 1                
 
     def update_all(self):
+        if self.player.dead:
+            self.player.dead = False
+        self.aliens = filter(lambda alien : alien.alive, self.aliens)
         self.detect_collisions()
         for alien in self.aliens:
             alien.move()
@@ -56,17 +59,18 @@ class Game:
                 if bullet.active and abs((bullet.x + BULLET_SIZE/2) - (alien.x + SHIP_SIZE/2)) < SHIP_SIZE/2 and abs((bullet.y+BULLET_SIZE/2) - (alien.y+SHIP_SIZE/2)) < SHIP_SIZE/2:
                     alien.alive = False
                     bullet.active = False
-        self.aliens = filter(lambda alien : alien.alive, self.aliens)
         self.aliens = sorted(self.aliens, key = lambda a : -a.y)
         self.alien_bullets = filter(lambda bullet : bullet.active, self.alien_bullets)
 
         for bullet in self.alien_bullets:
             if abs((bullet.x + BULLET_SIZE/2) - (self.player.x + SHIP_SIZE/2)) < SHIP_SIZE/2 and abs((bullet.y + BULLET_SIZE/2) - (self.player.y + SHIP_SIZE/2)) < SHIP_SIZE/2:
+                self.player.dead = True
                 self.player.lives -= 1
                 if self.player.lives < 0:
                     self.game_over = True
                 else:
                     self.player.x = WIDTH / 2
+                    
 
 class Alien:
     def __init__(self, game, x, y):
@@ -76,6 +80,7 @@ class Alien:
         self.direction = 1
         self.alive = True
         self.img = pygame.image.load("alien.png")
+        self.exploded = pygame.image.load("alien_dies.png")
         self.rect = self.img.get_rect()
 
     def shoot_maybe(self):
@@ -102,9 +107,11 @@ class Player:
         self.y = 440
         self.game = game
         self.img = pygame.image.load("player.png")
+        self.exploded = pygame.image.load("player_dies.png")
         self.rect = self.img.get_rect()
         self.speed = 0
         self.lives = 3
+        self.dead = False
 
     def accel(self, direction):
         if direction == 1:
@@ -149,6 +156,7 @@ class Bullet:
 def main():
     pygame.init()
     main_surface = pygame.display.set_mode((640, 480))
+    pygame.display.set_caption("Shitty Space Invaders")
     game = Game()
     timer = pygame.time.Clock()
     while True:
@@ -186,14 +194,22 @@ def main():
 
             main_surface.fill((0, 0, 0, 0))
             for alien in game.aliens:
-                main_surface.blit(alien.img, (alien.x, alien.y))
+                if alien.alive:
+                    main_surface.blit(alien.img, (alien.x, alien.y))
+                else:
+                    main_surface.blit(alien.exploded, (alien.x, alien.y))
             for bullet in game.player_bullets:
                 if bullet.active:
                     main_surface.blit(bullet.img, (bullet.x, bullet.y))
             for bullet in game.alien_bullets:
                 main_surface.blit(bullet.img, (bullet.x, bullet.y))
 
-            main_surface.blit(game.player.img, (game.player.x, game.player.y))
+
+            if game.player.dead:
+                main_surface.blit(game.player.exploded, (game.player.x, game.player.y))
+            else:
+                main_surface.blit(game.player.img, (game.player.x, game.player.y))
+            
             pygame.display.flip()
 
             game.player.move()
