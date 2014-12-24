@@ -15,6 +15,7 @@ class Game:
         self.alien_bullets = []
         self.player_bullets = []
         self.game_over = False
+        self.game_won = False
 
     def make_aliens(self):
         return [Alien(self, x*30, y*30) for x in range(10) for y in range(6)]
@@ -40,6 +41,9 @@ class Game:
     def update_all(self):
         if self.player.dead:
             self.player.dead = False
+        if len(self.aliens) == 0:
+            self.game_won = True
+            self.game_over = True    
         self.aliens = filter(lambda alien : alien.alive, self.aliens)
         self.detect_collisions()
         for alien in self.aliens:
@@ -162,12 +166,16 @@ def main():
     game = Game()
     timer = pygame.time.Clock()
     game_over = myfont.render("Game Over! (press space to restart)", 1, (255, 255, 0))
+    game_won = myfont.render("You Win! (press space to restart)", 1, (255, 255, 0))
 
     while True:
         timer.tick(60)
         if game.game_over:
             main_surface.fill((0, 0, 0, 0))
-            main_surface.blit(game_over, (100, 100))
+            if game.game_won:
+                main_surface.blit(game_won, (100, 100))
+            else:
+                main_surface.blit(game_over, (100, 100))
             pygame.display.flip()
             ev = pygame.event.poll()
             if ev.type == pygame.QUIT:
@@ -176,6 +184,7 @@ def main():
                 if ev.key == K_SPACE:
                     game = Game()
                     game.game_over = False
+                    game.game_won = False
                 elif ev.key == K_ESCAPE:
                     break
   
