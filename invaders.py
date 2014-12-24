@@ -89,7 +89,7 @@ class Alien:
         self.rect = self.img.get_rect()
 
     def shoot_maybe(self):
-        if randint(0, 1200) == 1:
+        if randint(0, len(self.game.aliens * 60)) == 1:
             self.game.alien_bullets.append(Bullet(self.x, self.y, 1))
 
     def __str__(self):
@@ -123,7 +123,7 @@ class Player:
             self.speed = 3
         elif direction == -1:
             self.speed = -3
-        else:
+        elif direction == 0:
             self.speed = 0
 
     def move(self):
@@ -192,21 +192,20 @@ def main():
             ev = pygame.event.poll()
             if ev.type == pygame.QUIT:
                 break
+
+            if ev.type == KEYUP:
+                if ev.key == K_LEFT or ev.key == K_RIGHT:
+                    game.player.speed = 0
+
             if ev.type == KEYDOWN:
                 if ev.key == K_LEFT:
                     game.player.accel(-1)
-                elif ev.key == K_RIGHT:
+                if ev.key == K_RIGHT:
                     game.player.accel(1)
-                elif ev.key == K_SPACE:
+                if ev.key == K_SPACE:
                     game.player.shoot()
-                elif ev.key == K_ESCAPE:
+                if ev.key == K_ESCAPE:
                     break
-            if ev.type == KEYUP:
-                if ev.key == K_LEFT:
-                    game.player.speed = 0
-                elif ev.key == K_RIGHT:
-                    game.player.speed = 0
-
 
             main_surface.fill((0, 0, 0, 0))
             for alien in game.aliens:
@@ -228,7 +227,7 @@ def main():
             lives = myfont.render("Lives: " + str(game.player.lives), 1, (255, 255, 0))
             main_surface.blit(lives, (20, 400))
             pygame.display.flip()
-            
+
             game.player.move()
             game.update_all()
 
